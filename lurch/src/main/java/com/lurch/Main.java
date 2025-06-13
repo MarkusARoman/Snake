@@ -5,6 +5,9 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 import com.lurch.time.Timer;
 import com.lurch.display.Quad;
 import com.lurch.core.Window;
@@ -24,7 +27,8 @@ public class Main {
     private Random random = new Random();
     private int score = 0;
     private static int highScore = 0;
-    private boolean directionChanged = false;
+
+    private Queue<Direction> directionQueue = new LinkedList<>();
 
     private final int gridWidth = 40;
     private final int gridHeight = 30;
@@ -94,19 +98,32 @@ public class Main {
     }
 
     private void update() {
+        // Consume the most recent valid direction
+        while (!directionQueue.isEmpty()) 
+        {
+            Direction newDir = directionQueue.poll();
+            if (!snake.opposite(newDir)) 
+            {
+                snake.setDirection(newDir);
+                break;
+            }
+        }
+
         snake.move();
-        directionChanged = false;
+
 
         if (snake.getHead().equals(food)) {
             snake.grow();
             score += 10;
             highScore = Math.max(highScore, score);
+            timer.setUPS(timer.getUPS()+0.25f);
             System.out.println("Score: " + score + " | High Score: " + highScore);
             spawnFood();
         }
 
         if (snake.checkSelfCollision() || snake.outOfBounds(gridWidth, gridHeight)) {
             state = GameState.GAME_OVER;
+            timer.setUPS(5);
         }
     }
 
@@ -130,22 +147,18 @@ public class Main {
             return;
         }
 
-        if (!directionChanged) {
-            if (keyInput.isKeyPressed(GLFW.GLFW_KEY_UP)) {
-                snake.setDirection(Direction.UP);
-                directionChanged = true;
-            } else if (keyInput.isKeyPressed(GLFW.GLFW_KEY_DOWN)) {
-                snake.setDirection(Direction.DOWN);
-                directionChanged = true;
-            }if (keyInput.isKeyPressed(GLFW.GLFW_KEY_LEFT)) {
-                snake.setDirection(Direction.LEFT);
-                directionChanged = true;
-            } else if (keyInput.isKeyPressed(GLFW.GLFW_KEY_RIGHT)) {
-                snake.setDirection(Direction.RIGHT);
-                directionChanged = true;
-            }
+        // Queue directional input
+        if (keyInput.isKeyPressed(GLFW.GLFW_KEY_UP)) {
+            directionQueue.offer(Direction.UP);
+        } else if (keyInput.isKeyPressed(GLFW.GLFW_KEY_DOWN)) {
+            directionQueue.offer(Direction.DOWN);
+        } else if (keyInput.isKeyPressed(GLFW.GLFW_KEY_LEFT)) {
+            directionQueue.offer(Direction.LEFT);
+        } else if (keyInput.isKeyPressed(GLFW.GLFW_KEY_RIGHT)) {
+            directionQueue.offer(Direction.RIGHT);
         }
     }
+
 
 
     private void render() 
