@@ -14,8 +14,7 @@ public class Snake {
         segments.add(new Vector2f(5, 5));
     }
 
-    public void move() 
-    {
+    public void move() {
         Vector2f head = new Vector2f(segments.getFirst());
         switch (direction) {
             case UP -> head.y -= 1;
@@ -28,33 +27,35 @@ public class Snake {
         grow = false;
     }
 
-    public void grow() 
-    {
+    public void grow() {
         grow = true;
     }
 
-    public void setDirection(Direction dir) 
-    {
-        if ((dir == Direction.UP && direction != Direction.DOWN) ||
-            (dir == Direction.DOWN && direction != Direction.UP) ||
-            (dir == Direction.LEFT && direction != Direction.RIGHT) ||
-            (dir == Direction.RIGHT && direction != Direction.LEFT)) {
+    public void setDirection(Direction dir) {
+        if (!opposite(dir)) {
             direction = dir;
         }
     }
 
-    public Vector2f getHead() 
+    public boolean opposite(Direction dir)
     {
+        return (
+            (dir == Direction.UP    && direction == Direction.DOWN  ) ||
+            (dir == Direction.DOWN  && direction == Direction.UP    ) ||
+            (dir == Direction.LEFT  && direction == Direction.RIGHT ) ||
+            (dir == Direction.RIGHT && direction == Direction.LEFT  )
+        );
+    }
+
+    public Vector2f getHead() {
         return segments.getFirst();
     }
 
-    public List<Vector2f> getSegments() 
-    {
+    public List<Vector2f> getSegments() {
         return segments;
     }
 
-    public boolean checkSelfCollision() 
-    {
+    public boolean checkSelfCollision() {
         Vector2f head = getHead();
         for (int i = 1; i < segments.size(); i++) {
             if (segments.get(i).equals(head)) {
@@ -64,8 +65,7 @@ public class Snake {
         return false;
     }
 
-    public boolean outOfBounds(int width, int height) 
-    {
+    public boolean outOfBounds(int width, int height) {
         Vector2f head = getHead();
         return head.x < 0 || head.x >= width || head.y < 0 || head.y >= height;
     }
